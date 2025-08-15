@@ -1,0 +1,18 @@
+[providers]
+python = "3.11"
+
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.11"
+
+[phases.setup]
+# IMPORTANT: key must be camelCase: nixPkgs
+nixPkgs = ["python311", "python311Packages.pip"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[phases.build]
+cmds = ["echo 'Build complete'"]
+
+[start]
+cmd = "uvicorn main:app --host 0.0.0.0 --port $PORT" 

@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: cisco_ai_postgres
+    environment:
+      POSTGRES_DB: cisco_ai
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: YOUR_PASSWORD_HERE
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cisco_ai_network
+
+  # Backend API
+  backend:
+    build: ..
+    container_name: cisco_ai_backend
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=cisco_ai
+      - DB_USER=postgres
+      - DB_PASSWORD=YOUR_PASSWORD_HERE
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SECRET_KEY=${SECRET_KEY:-YOUR_SECRET_KEY_HERE}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+    volumes:
+      - ../data:/app/data
+      - ../gpt_cache:/app/gpt_cache
+      - ../uploads:/app/uploads
+      - ../reports:/app/reports
+      - ../snapshots:/app/snapshots
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - cisco_ai_network
+    restart: unless-stopped
+
+  # Frontend Application
+  frontend:
+    build: 
+      context: ../cisco-config-ui
+      dockerfile: Dockerfile
+    container_name: cisco_ai_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - cisco_ai_network
+    restart: unless-stopped
+
+  # Redis (for caching and session storage)
+  redis:
+    image: redis:7-alpine
+    container_name: cisco_ai_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - cisco_ai_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  cisco_ai_network:
+    driver: bridge 

@@ -1,0 +1,13 @@
+{
+  "agent_token": "your_agent_token_from_cloud",
+  "cloud_url": "https://your-cloud-backend.com",
+  "company_id": 1,
+  "organization_id": 1,
+  "networks": [1, 2, 3],
+  "capabilities": [
+    "snmp_discovery",
+    "ssh_config", 
+    "health_monitoring"
+  ],
+  "version": "1.0.0"
+} 

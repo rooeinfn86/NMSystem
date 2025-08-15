@@ -1,0 +1,17 @@
+[
+    {
+      "cis_control": "4.4",
+      "title": "Implement and Manage a Firewall",
+      "keywords": ["firewall", "port", "block", "allow", "deny"]
+    },
+    {
+      "cis_control": "5.1",
+      "title": "Restrict Administrative Privileges",
+      "keywords": ["admin", "privilege", "root", "sudo"]
+    },
+    {
+      "cis_control": "9.2",
+      "title": "Limit and Control Network Ports, Protocols, and Services",
+      "keywords": ["ssh", "telnet", "ftp", "port", "service", "protocol"]
+    }
+  ]
